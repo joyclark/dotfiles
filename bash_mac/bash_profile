@@ -1,0 +1,69 @@
+export CLICOLOR=1
+
+## Aliases
+
+alias ..='cd ..'
+
+alias la="ls -a"
+alias ll="ls -alh"
+alias sublime="open -a 'Sublime Text'"
+alias showHiddenFiles="defaults write com.apple.finder AppleShowAllFiles TRUE; killall Finder"
+alias hideHiddenFiles="defaults write com.apple.finder AppleShowAllFiles FALSE; killall Finder"
+alias office="open -a 'LibreOffice'"
+
+## History
+
+shopt -s histappend
+export HISTSIZE=500000
+export HISTFILESIZE=100000
+
+
+## Docker Aliases
+
+alias dm-start='docker-machine start default && sleep 5 && eval $(docker-machine env default)'
+alias dm-stop='docker-machine stop default && unset DOCKER_TLS_VERIFY DOCKER_HOST DOCKER_CERT_PATH DOCKER_MACHINE_NAME'
+alias dm-status='docker-machine status default'
+alias dm-restart='docker-machine-default-stop && docker-machine-default-start'
+
+alias dps='docker ps'
+alias drm-stopped='docker rm $(docker ps -a -q)'
+alias drmi-dangling='docker rmi $(docker images -qf dangling=true)'
+alias dvrm-dangling='docker volume rm $(docker volume ls -qf dangling=true)'
+
+export PATH="$PATH:~/bin"
+
+
+# Bash Completion for Git:
+#  brew install bash-completion
+#  brew tap homebrew/completions
+if [ -f $(brew --prefix)/etc/bash_completion ]; then
+    . $(brew --prefix)/etc/bash_completion
+fi
+
+# Git Prompt:
+#  https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
+source ~/.git-prompt.sh
+export GIT_PS1_SHOWDIRTYSTATE=1
+PS1='\[\033[35m\]\u\[\033[m\]@\[\033[36m\]\h:\[\033[m\]\W $(__git_ps1 " (%s)")\$ '
+PS1='\[\033[01;32m\]\u@work\[\033[1;34m\] \W $(__git_ps1 " (%s)")\$\[\033[00m\] '
+
+
+### functions
+# creates the directory and changes into it
+mkcd() { [[ -n "$1" ]] && mkdir -p $1 && cd $1; }
+
+simple-hist() { history | awk '{print $2,$3}' | sort | uniq -c | sort -nr | head; }
+
+hist() {
+  local P=$(for i in {1..2} ; do echo -n \$$i'" "' ; done)
+  echo $P 
+  history \
+    | awk '{CMD[$2" "$3]++;count++;}END { for (a in CMD)print CMD[a] " " CMD[a]/count*100 "% " a;}' \
+    | grep -v "./" \
+    | column -c3 -s " " -t \
+    | sort -nr \
+    | nl \
+    | head -n${1:-10}
+}
+
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_74.jdk/Contents/Home
